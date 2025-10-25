@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology LO1 Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #e9ecef;
+            color: #333;
+        }
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .intro-form {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            background-color: #eaf5ff;
+        }
+        .intro-form input {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 90%; 
+        }
+        #start-quiz-btn {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px; 
+        }
+        #start-quiz-btn:hover { background-color: #1e7e34; }
+        
+        #quiz-container { display: none; } 
+
+        .question-block {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .question-text {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .choice-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .choice-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .choice-item.disabled {
+            cursor: default;
+        }
+        .choice-item:not(.disabled):hover {
+            background-color: #e2e6ea;
+            border-color: #adb5bd;
+        }
+        .correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            font-weight: bold;
+        }
+        .incorrect {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-size: 0.95em;
+        }
+        .feedback.correct {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #results-area {
+            text-align: center;
+            padding: 20px;
+            border-top: 2px solid #007bff;
+            margin-top: 20px;
+            display: none;
+        }
+        #results-area button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #results-area button:hover {
+            background-color: #0056b3;
+        }
+        #status-message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Biology LO1 (Be careful! This quiz is dangerous!)</h1>
+        
+        <div class="intro-form">
+            <input type="text" id="student-name" placeholder="Your Name" required>
+            <button id="start-quiz-btn">Begin the Battle <span font="font-weight: bold;">BEGIN</span></button>
+        </div>
+
+        <div id="quiz-container">
+            </div>
+
+        <div id="results-area">
+            <h2>Quiz Finished!</h2>
+            <p id="final-score">Score: 0/20</p>
+            <button id="submit-results-btn">Finish</button>
+            <div id="status-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xvgvopgn"; 
+        // -----------------------
+
+        const quizData = [
+            { qNum: 1, question: "A farmer plants genetically modified cotton that produces its own insecticide (Bt toxin). A secondary effect is that a different pest flourishes because its natural predators also killed by the Bt toxin are gone. This situation is an example of:", choices: ["A. A helpful trait", "B. A failure of the genetic modification", "C. An evidence-based debate", "D. An unpredicted ecosystem consequence and a trade-off"], answer: "D", rationale: "This is an unintended effect on the ecosystem and represents a trade-off pest control versus new pest emergence." },
+            { qNum: 2, question: "Which of the following statements represents the most evidence-based argument in a debate about GMOs?", choices: ["A. I believe modifying nature is wrong.", "B. A 2019 meta-analysis of 6,000 studies concluded that current GMO crops show no risk to human health.", "C. My neighbor's farm failed after planting GMOs, so they are not good for farmers.", "D. These crops are modified and might cause unknown issues."], answer: "B", rationale: "This statement cites a specific, large-scale scientific analysis, making it an objective, evidence-based claim." },
+            { qNum: 3, question: "Golden Rice is a GMO developed to produce beta-carotene, a precursor to Vitamin A. The primary goal of this modification is to address:", choices: ["A. Micronutrient deficiencies in developing nations.", "B. Pest infestations in rice paddies.", "C. The need for a more drought-tolerant crop.", "D. The economic dominance of rice-exporting countries."], answer: "A", rationale: "Vitamin A deficiency is a major health problem in many regions. This rice is designed to provide this essential nutrient, combating malnutrition." },
+            { qNum: 4, question: "The concern that herbicide-resistant genes from a GMO crop might escape and cross-pollinate with a wild relative, creating a superweed, is a potential...", choices: ["A. Unintended consequence for ecosystems.", "B. Beneficial characteristic for biodiversity.", "C. Trade-off for human nutrition.", "D. Intended consequence for farmers."], answer: "A", rationale: "This describes an unplanned and negative impact on the natural environment by creating a new, hard-to-manage weed." },
+            { qNum: 5, question: "Which scenario best describes the skill of identifying and describing trade-offs regarding GMOs?", choices: ["A. A scientist states that a GMO crop is completely safe and has no downsides.", "B. A politician bans GMOs based on public opinion.", "C. A company develops a crop that is drought-tolerant but is significantly more expensive for small farmers to purchase.", "D. A consumer buys a GMO product because of its packaging."], answer: "C", rationale: "This presents a clear 'pro' drought tolerance weighed against a clear 'con' high cost/farmer access, which is the definition of a trade-off." },
+            { qNum: 6, question: "Modifying a staple crop like cassava or wheat to have higher nutritional value directly targets what global issue?", choices: ["A. Food scarcity", "B. Malnutrition", "C. Water shortages", "D. Economic inequality"], answer: "B", rationale: "Malnutrition or 'hidden hunger' occurs when people have enough calories but not enough essential vitamins and minerals." },
+            { qNum: 7, question: "A major human health concern related to creating GMOs is the potential for...", choices: ["A. The food being unexpectedly large.", "B. The introduction of new allergens into the food supply.", "C. The food's genes to be incorporated into human DNA.", "D. The crops being excessively colorful."], answer: "B", rationale: "If a gene from an allergenic source like a nut is moved into a non-allergenic one like soy, it could create a new risk of allergic reaction." },
+            { qNum: 8, question: "Modifying a crop for drought tolerance primarily involves altering genes that regulate...", choices: ["A. Plant height and leaf size.", "B. Root system development and water-use efficiency transpiration.", "C. Resistance to fungal infections.", "D. Production of vitamins and minerals."], answer: "B", rationale: "Deeper roots can find more water, and more efficient transpiration water evaporation from leaves conserves it." },
+            { qNum: 9, question: "The principle that genes are the codes for an organism's characteristics is fundamental to genetic modification because the technology...", choices: ["A. Reads the code to predict an organism's future.", "B. Creates entirely new, synthetic codes from scratch.", "C. Directly edits the code genes to produce a desired characteristic trait.", "D. Uses the code to determine which organisms are unfit."], answer: "C", rationale: "The goal is to change the genetic code genes to produce a desired characteristic trait." },
+            { qNum: 10, question: "Unintended consequences for humans can include socio-economic issues. Which of the following is a socio-economic risk often debated?", choices: ["A. The food might cause an allergic reaction.", "B. The patenting of seeds could increase farmer dependency on large corporations.", "C. The modified gene could transfer to wild plants.", "D. The crop could harm non-target insects like butterflies."], answer: "B", rationale: "This describes a potential change in the economy of farming and the social structure of agriculture farmer vs. corporation." },
+            { qNum: 11, question: "A crop is engineered to be resistant to a virus that frequently wipes out 40% of the harvest. This is a direct example of which listed benefit?", choices: ["A. Disease resistance", "B. Drought tolerance", "C. Higher nutritional value", "D. Unintended consequence"], answer: "A", rationale: "A virus is a pathogen that causes disease in plants, making this an example of disease resistance." },
+            { qNum: 12, question: "The emergence of pests like the corn rootworm that are no longer killed by Bt toxins in GMO corn is an example of...", choices: ["A. Evolution by natural selection.", "B. An intended benefit of the technology.", "C. A successful evidence-based debate.", "D. The crop gaining higher nutritional value."], answer: "A", rationale: "The toxin acts as a selective pressure, allowing the naturally resistant pests to survive, reproduce, and pass on the resistance trait." },
+            { qNum: 13, question: "Which of the following is a significant ecological concern about the widespread use of herbicide-resistant HR crops?", choices: ["A. It leads to an over-reliance on a single herbicide, which can reduce biodiversity and affect soil microbes.", "B. It makes the crops taste different, leading to less food for wildlife.", "C. It requires farmers to use more water, leading to drought.", "D. It causes the crops to grow too tall."], answer: "A", rationale: "Over-reliance on herbicides can impact non-target organisms in the soil and reduce plant diversity in surrounding areas." },
+            { qNum: 14, question: "A key difference between genetic engineering and traditional selective breeding is that genetic engineering...", choices: ["A. Is a much slower process.", "B. Can transfer genes between two completely different species e.g., a bacterium and a plant.", "C. Only works on animals, while selective breeding only works on plants.", "D. Does not change the genes of an organism, only its appearance."], answer: "B", rationale: "Genetic engineering can overcome species barriers, whereas selective breeding relies on organisms that can naturally interbreed." },
+            { qNum: 15, question: "A debate arises over a new GMO potato that resists bruising reducing food waste but also contains a gene from a known allergen. Arguing that the benefit of less waste must be weighed against the risk of allergic reaction is a clear example of:", choices: ["A. Arguing a stance without evidence.", "B. Identifying and describing a trade-off.", "C. An exclusively ecosystem-level consequence.", "D. A failure in genetic engineering."], answer: "B", rationale: "A trade-off involves gaining a benefit reduced waste while accepting a potential risk or cost allergenicity." },
+            { qNum: 16, question: "If a GMO crop like Roundup Ready soy is designed to be herbicide-resistant, what is the intended agricultural practice?", choices: ["A. To stop using herbicides entirely.", "B. To spray the entire field with a specific herbicide, killing weeds but not the crop.", "C. To make the crop produce its own herbicide to kill weeds.", "D. To make the crop more vulnerable to herbicides."], answer: "B", rationale: "The resistance allows the farmer to apply the herbicide broadly to kill weeds without harming the crop." },
+            { qNum: 17, question: "Why is the loss of genetic diversity monoculture considered an unintended consequence of modern agriculture, including GMOs?", choices: ["A. It makes the food supply highly vulnerable to a single new pest or disease.", "B. It leads to crops that are extremely nutritious.", "C. It causes the soil to become overly fertile.", "D. It confuses pollinators like bees."], answer: "A", rationale: "If all plants are genetically identical, they share the same vulnerabilities, putting the entire crop at risk from a single threat." },
+            { qNum: 18, question: "Given Egypt's geography reliance on the Nile, large desert areas, which two genetic modifications would be most relevant to its food security challenges?", choices: ["A. Disease resistance and higher nutritional value", "B. Drought tolerance and disease resistance", "C. Higher nutritional value and better taste", "D. Drought tolerance and frost resistance"], answer: "B", rationale: "Water scarcity drought and the increasing threat of diseases due to environmental changes are key challenges for the region." },
+            { qNum: 19, question: "An evidence-based debate requires that participants...", choices: ["A. Come to a unanimous agreement.", "B. Use verifiable data and peer-reviewed research to support their claims.", "C. Ignore all economic factors and focus only on environmental ones.", "D. Rely primarily on personal testimony."], answer: "B", rationale: "Evidence must be objective and verifiable, usually from scientific research or reliable statistics." },
+            { qNum: 20, question: "A potential risk to non-target organisms an ecosystem consequence is a central argument against which specific GMO?", choices: ["A. Golden Rice.", "B. Herbicide-resistant soy.", "C. Bt corn, because its pollen can be toxic to beneficial insects like Monarch butterfly larvae.", "D. Frost-resistant strawberries."], answer: "C", rationale: "Bt corn produces an insecticide that may affect non-pest insects when they ingest the pollen." }
+        ];
+
+        let studentName = '';
+        let score = 0;
+        let answeredQuestions = 0;
+
+        // --- DOM ELEMENTS ---
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const studentNameInput = document.getElementById('student-name');
+        const introForm = document.querySelector('.intro-form');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsArea = document.getElementById('results-area');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const submitResultsBtn = document.getElementById('submit-results-btn');
+        const statusMessageDiv = document.getElementById('status-message');
+
+
+        // --- FUNCTIONALITY ---
+
+        function generateQuiz() {
+            let html = '';
+            quizData.forEach((data) => {
+                html += `<div class="question-block" id="q-${data.qNum}">
+                            <span class="question-text">${data.qNum}. ${data.question}</span>
+                            <ul class="choice-list" data-qnum="${data.qNum}">`;
+
+                data.choices.forEach((choice, index) => {
+                    const choiceLetter = String.fromCharCode(65 + index);
+                    // Retain the choice letter and the rest of the text
+                    const fullChoice = choiceLetter + ". " + choice.substring(3); 
+                    html += `<li class="choice-item" data-choice="${choiceLetter}">${fullChoice}</li>`;
+                });
+
+                html += `</ul>
+                         <div class="feedback" id="feedback-${data.qNum}"></div>
+                         </div>`;
+            });
+            quizContainer.innerHTML = html;
+        }
+
+        function handleChoiceClick(event) {
+            const clickedItem = event.target.closest('.choice-item');
+            if (!clickedItem || clickedItem.classList.contains('disabled')) return;
+
+            const choicesList = clickedItem.closest('.choice-list');
+            const qNum = choicesList.getAttribute('data-qnum');
+            const questionData = quizData.find(q => q.qNum == qNum);
+            const feedbackDiv = document.getElementById(`feedback-${qNum}`);
+
+            // Prevent re-clicking and register question as answered
+            if (choicesList.classList.contains('answered')) {
+                return;
+            }
+            choicesList.classList.add('answered');
+            answeredQuestions++;
+
+            // Disable all choices for this question
+            Array.from(choicesList.children).forEach(item => item.classList.add('disabled'));
+
+            const selectedChoice = clickedItem.getAttribute('data-choice');
+            const isCorrect = selectedChoice === questionData.answer;
+
+            // Update score
+            if (isCorrect) {
+                score++;
+            }
+
+            // Apply styling
+            clickedItem.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            // Find and highlight the correct answer if the selected one was wrong
+            if (!isCorrect) {
+                Array.from(choicesList.children).forEach(item => {
+                    if (item.getAttribute('data-choice') === questionData.answer) {
+                        item.classList.add('correct');
+                    }
+                });
+            }
+
+            // Display feedback and rationale
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            // Note: The strong tags here in the JavaScript are necessary for the visual formatting of the result text
+            const resultText = isCorrect ? '✅ Correct! ' : '❌ Incorrect. ';
+            feedbackDiv.innerHTML = `<strong>${resultText}</strong> The correct answer is **${questionData.answer}**. <br> ${questionData.rationale}`;
+            
+            // Check if quiz is complete
+            if (answeredQuestions === quizData.length) {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizContainer.style.display = 'none';
+            finalScoreDisplay.textContent = `Score: ${score}/${quizData.length}`;
+            resultsArea.style.display = 'block';
+        }
+
+        async function submitResults() {
+            
+            submitResultsBtn.disabled = true;
+            statusMessageDiv.innerHTML = '<span style="color:#007bff;">Submitting... Please wait.</span>';
+
+            const data = {
+                'Student Name': studentName,
+                'Quiz Score': `${score}/${quizData.length}`,
+                'Quiz Name': 'Biology LO1 Quiz',
+                'Timestamp': new Date().toLocaleString()
+            };
+
+            try {
+                const response = await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    statusMessageDiv.innerHTML = '<span style="color:#28a745;">✅ Results submitted successfully to bishotasks@gmail.com!</span>';
+                } else {
+                    const errorData = await response.json();
+                    console.error('Formspree submission error:', errorData);
+                    statusMessageDiv.innerHTML = `<span style="color:red;">❌ Submission failed. Status: ${response.status}. Please check Formspree dashboard.</span>`;
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                statusMessageDiv.innerHTML = '<span style="color:red;">❌ Network error. Could not connect to submission service.</span>';
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+
+        startQuizBtn.addEventListener('click', () => {
+            studentName = studentNameInput.value.trim();
+
+            if (!studentName) {
+                alert("Please enter your name to start the quiz.");
+                studentNameInput.focus();
+                return;
+            }
+
+            introForm.style.display = 'none';
+            quizContainer.style.display = 'block';
+        });
+
+        document.getElementById('quiz-container').addEventListener('click', handleChoiceClick);
+        submitResultsBtn.addEventListener('click', submitResults);
+
+        // --- INITIALIZATION ---
+        generateQuiz();
+
+    </script>
+</body>
+</html>
